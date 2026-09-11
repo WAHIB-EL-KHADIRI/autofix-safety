@@ -69,6 +69,18 @@ python scanners/ruff_fix_safety.py path/to/corpus out.json --safe-only
 Output is a JSON array of findings with paths relative to the corpus root.
 Write to a file rather than piping — a long run buffers and you see nothing.
 
+### Check it works, without cloning anything
+
+[`examples/minimal-corpus`](examples/) is three files that take seconds:
+
+```bash
+pip install sqlfluff
+python scanners/sqlfluff_fix_safety.py examples/minimal-corpus out.json
+```
+
+Two of the three should come back `CORRUPTION`; the third is ordinary SQL and
+must not, because a scanner that flags everything finds nothing.
+
 ## Reproducible results
 
 Every number below came from a completed run on this machine. Commands and
