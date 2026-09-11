@@ -67,17 +67,40 @@ class TestParseStatus:
 class TestKnownDefect:
     """The bug this scanner was written to find, pinned as a test.
 
-    Reported upstream as sqlfluff#8415. If sqlfluff fixes it, this test starts
-    failing -- which is the correct signal, not a regression here.
+    The original repro used two sign indicators — `1 * - - 5` fusing into the
+    comment marker `--`. Upstream fixed that instance in sqlfluff#8395, so a
+    test written against it would now pass by accident forever. These use the
+    cases that still reproduce on sqlfluff 4.3.0, reported in sqlfluff#8415.
+
+    If sqlfluff fixes those too these start skipping, which is the correct
+    signal rather than a silent pass.
     """
 
-    def test_token_fusion_produces_a_comment(self):
-        source = "SELECT 1 * - - 5 AS a, 99 AS b FROM t\n"
-        parses_before, _ = scanner.parse_status(source, "ansi")
-        assert parses_before, "fixture must parse before the fix"
+    @pytest.mark.parametrize(
+        "dialect,sql,fused",
+        [
+            ("ansi", "SELECT 8 | ~ ~ ~4;\n", "~~~"),
+            ("ansi", "SELECT 1 * ~ ~ ~ func(5);\n", "~~~"),
+            ("sqlite", "SELECT 4 | ~ ~ ~4 AS b;\n", "~~~"),
+            ("oracle", "SELECT a MULTISET EXCEPT b AS c FROM t;\n", "MULTISETEXCEPT"),
+        ],
+    )
+    def test_whitespace_fix_welds_adjacent_tokens(self, dialect, sql, fused):
+        parses_before, _ = scanner.parse_status(sql, dialect)
+        assert parses_before, "the input must parse before the fix"
 
-        fixed, _guarded = scanner.fix(source, "ansi")
+        fixed, _guarded = scanner.fix(sql, dialect)
 
-        if "--" not in fixed:
-            pytest.skip("upstream appears to have fixed the token fusion")
-        assert "--" in fixed, "the '- -' operators welded into a comment marker"
+        if fused not in fixed:
+            pytest.skip(f"upstream appears to have fixed the {fused} fusion")
+
+        parses_after, _ = scanner.parse_status(fixed, dialect)
+        assert not parses_after, (
+            f"expected {fused!r} to make the output unparsable; got {fixed!r}"
+        )
+
+    def test_a_benign_spacing_fix_is_still_applied(self):
+        """A guard against over-correction: ordinary spacing fixes must still
+        be applied, or a 'fix' that changes nothing would look like safety."""
+        fixed, _ = scanner.fix("SELECT  1  +  2\n", "ansi")
+        assert fixed == "SELECT 1 + 2\n"
