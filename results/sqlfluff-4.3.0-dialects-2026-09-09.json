@@ -1,0 +1,351 @@
+[
+  {
+    "path": "ansi/arithmetic_a.sql",
+    "dialect": "ansi",
+    "kind": "CORRUPTION",
+    "detail": [
+      "| ~~~4",
+      "* ~~~func(5)",
+      "~~5"
+    ]
+  },
+  {
+    "path": "ansi/empty_file.sql",
+    "dialect": "ansi",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1,
+      "len2": 0
+    }
+  },
+  {
+    "path": "ansi/modulo.sql",
+    "dialect": "ansi",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 137,
+      "len2": 155
+    }
+  },
+  {
+    "path": "athena/select_reduce.sql",
+    "dialect": "athena",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 752,
+      "len2": 748
+    }
+  },
+  {
+    "path": "bigquery/literals_with_data_type_and_quoted.sql",
+    "dialect": "bigquery",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1519,
+      "len2": 1503
+    }
+  },
+  {
+    "path": "bigquery/pipe_statement.sql",
+    "dialect": "bigquery",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 4169,
+      "len2": 4169
+    }
+  },
+  {
+    "path": "bigquery/select_with_cast.sql",
+    "dialect": "bigquery",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 992,
+      "len2": 984
+    }
+  },
+  {
+    "path": "clickhouse/parametric_aggregate_functions.sql",
+    "dialect": "clickhouse",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1838,
+      "len2": 1868
+    }
+  },
+  {
+    "path": "clickhouse/tuple_datatype.sql",
+    "dialect": "clickhouse",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 280,
+      "len2": 292
+    }
+  },
+  {
+    "path": "duckdb/anti_semi_join.sql",
+    "dialect": "duckdb",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 450,
+      "len2": 462
+    }
+  },
+  {
+    "path": "duckdb/select_replace.sql",
+    "dialect": "duckdb",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 115,
+      "len2": 119
+    }
+  },
+  {
+    "path": "exasol/select_statement.sql",
+    "dialect": "exasol",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 4691,
+      "len2": 5071
+    }
+  },
+  {
+    "path": "hive/select_lateral_view.sql",
+    "dialect": "hive",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1044,
+      "len2": 1036
+    }
+  },
+  {
+    "path": "mariadb/create_user.sql",
+    "dialect": "mariadb",
+    "kind": "CORRUPTION",
+    "detail": [
+      "@localhost IDENTIFIED BY 'password';\nCREATE USER \"jeffrey\"@\"localhost\" IDENTIFIED BY \"password\";\nCREATE USER jeffrey@loc"
+    ]
+  },
+  {
+    "path": "mariadb/create_view_if_not_exists.sql",
+    "dialect": "mariadb",
+    "kind": "CORRUPTION",
+    "detail": [
+      "CREATE DEFINER = admin@localhost SQL SECURITY INVOKER\nVIEW IF NOT EXISTS v5 AS SELECT 1;\nCREATE VIEW IF NOT EXISTS v6 AS"
+    ]
+  },
+  {
+    "path": "mariadb/grant.sql",
+    "dialect": "mariadb",
+    "kind": "CORRUPTION",
+    "detail": [
+      "@localhost;\nGRANT ALL PRIVILEGES ON *.* TO prj_svc@'%';"
+    ]
+  },
+  {
+    "path": "mariadb/interval.sql",
+    "dialect": "mariadb",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 481,
+      "len2": 477
+    }
+  },
+  {
+    "path": "mysql/create_user.sql",
+    "dialect": "mysql",
+    "kind": "CORRUPTION",
+    "detail": [
+      "@localhost IDENTIFIED BY 'password';\nCREATE USER 'jeffrey'@'localhost' IDENTIFIED BY 'password';\nCREATE USER jeffrey@loc"
+    ]
+  },
+  {
+    "path": "mysql/grant.sql",
+    "dialect": "mysql",
+    "kind": "CORRUPTION",
+    "detail": [
+      "@localhost;\nGRANT ALL PRIVILEGES ON *.* TO prj_svc@'%';\nGRANT 'role-name'@'%' TO user_name@'%';\nGRANT 'role-one'@'%', 'r"
+    ]
+  },
+  {
+    "path": "mysql/interval.sql",
+    "dialect": "mysql",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 481,
+      "len2": 477
+    }
+  },
+  {
+    "path": "mysql/json_value_returning.sql",
+    "dialect": "mysql",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 745,
+      "len2": 733
+    }
+  },
+  {
+    "path": "oracle/multiset_operators.sql",
+    "dialect": "oracle",
+    "kind": "CORRUPTION",
+    "detail": [
+      "cust_address2_ntab AS multiset_except",
+      "cust_address2_ntab AS multiset_except_all",
+      "cust_address2_ntab AS multiset_except_distinct"
+    ]
+  },
+  {
+    "path": "oracle/select_for_update.sql",
+    "dialect": "oracle",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 987,
+      "len2": 995
+    }
+  },
+  {
+    "path": "postgres/array.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1790,
+      "len2": 1786
+    }
+  },
+  {
+    "path": "postgres/create_function.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 6433,
+      "len2": 6441
+    }
+  },
+  {
+    "path": "postgres/create_table.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 10692,
+      "len2": 10692
+    }
+  },
+  {
+    "path": "postgres/full_text_search.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 935,
+      "len2": 927
+    }
+  },
+  {
+    "path": "postgres/postgres_postgis_operators.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 5869,
+      "len2": 5873
+    }
+  },
+  {
+    "path": "postgres/select.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 3156,
+      "len2": 3144
+    }
+  },
+  {
+    "path": "postgres/select_frame_clause.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 624,
+      "len2": 616
+    }
+  },
+  {
+    "path": "postgres/variadic.sql",
+    "dialect": "postgres",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1335,
+      "len2": 1369
+    }
+  },
+  {
+    "path": "snowflake/within_group.sql",
+    "dialect": "snowflake",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1624,
+      "len2": 1620
+    }
+  },
+  {
+    "path": "sqlite/arithmetric_a.sql",
+    "dialect": "sqlite",
+    "kind": "CORRUPTION",
+    "detail": [
+      "| ~~~4",
+      "* ~~~func(5)",
+      "LIKE ~~5"
+    ]
+  },
+  {
+    "path": "trino/within_group.sql",
+    "dialect": "trino",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 918,
+      "len2": 948
+    }
+  },
+  {
+    "path": "tsql/create_view_with_set_statements.sql",
+    "dialect": "tsql",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 781,
+      "len2": 781
+    }
+  },
+  {
+    "path": "tsql/json_functions.sql",
+    "dialect": "tsql",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 1142,
+      "len2": 1150
+    }
+  },
+  {
+    "path": "tsql/json_scalar_functions.sql",
+    "dialect": "tsql",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 4983,
+      "len2": 4999
+    }
+  },
+  {
+    "path": "tsql/stored_procedured_mixed_statements.sql",
+    "dialect": "tsql",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 607,
+      "len2": 791
+    }
+  },
+  {
+    "path": "vertica/utf8.sql",
+    "dialect": "vertica",
+    "kind": "UNSTABLE",
+    "detail": {
+      "len1": 9766,
+      "len2": 9770
+    }
+  }
+]
