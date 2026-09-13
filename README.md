@@ -174,8 +174,21 @@ Finding candidates is easy. Knowing which are real is the work.
   fixture, then re-verify against it.
 - **Read the log, not just the findings.** `GUARDED` exists because sqlfluff
   prints *"Please report this as a bug"* when it declines its own fix — and the
-  scanner was discarding that as noise. Adding it as a class produced
-  [sqlfluff#8466](https://github.com/sqlfluff/sqlfluff/issues/8466).
+  scanner was discarding that as noise.
+- **A scanner hit is not a report.** The `GUARDED` class produced
+  [sqlfluff#8466](https://github.com/sqlfluff/sqlfluff/issues/8466), which was
+  **closed as not-planned** — not because the behaviour was imagined, but
+  because the report was filed before the cause was understood and then
+  corrected twice in public. The maintainer's words are worth quoting, because
+  they are the most useful feedback in this repository's history:
+
+  > *"This issue was opened, then reframed twice. Please review your findings
+  > again, reproduce manually, and open a clear issue."*
+
+  Correcting yourself in the open is right **after** filing wrong. It is not a
+  substitute for being right at filing time, and the second correction spends
+  more credibility than the first one earns. Root-cause it, measure the whole
+  scope, build one manual repro, then file once.
 
 ## Limitations
 
