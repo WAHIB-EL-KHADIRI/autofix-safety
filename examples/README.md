@@ -51,3 +51,11 @@ it means the fix landed. The same thing already happened to this project's
 original repro: `1 * - - 5` fusing into the comment marker `--` was fixed
 upstream in [#8395](https://github.com/sqlfluff/sqlfluff/pull/8395), so it is
 deliberately not used here.
+
+## The other directory
+
+[`rf06-guard-both-directions/`](rf06-guard-both-directions/) is not a corpus for
+the scanner. It is a hand-verified pair showing sqlfluff's unparsable-fix guard
+failing in *both* directions on one rule — declining a safe fix, and applying a
+corrupting one. It also records the report that was closed as not-planned, and
+why.
