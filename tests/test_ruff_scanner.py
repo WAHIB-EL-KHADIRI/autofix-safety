@@ -6,6 +6,7 @@ found nothing, so the oracle and the corpus filter are the things worth pinning
 down.
 """
 
+import json
 import tempfile
 from pathlib import Path
 
@@ -94,3 +95,56 @@ class TestAgainstRealRuff:
                 corpus / "broken.py", corpus, workdir, unsafe=True
             )
         assert finding is None
+
+
+class TestCleanRunReporting:
+    """A clean corpus is the expected outcome, so it must not look like a hang.
+
+    These pin the loop's control flow rather than any ruff behaviour, so
+    `scan_file` is stubbed out -- invoking ruff 400 times to test a `print`
+    would be slow and would couple the test to the fixer.
+    """
+
+    @staticmethod
+    def _corpus(root: Path, count: int) -> Path:
+        corpus = root / "corpus"
+        corpus.mkdir()
+        for index in range(count):
+            (corpus / f"f{index:03d}.py").write_text("x = 1\n", encoding="utf-8")
+        return corpus
+
+    def test_progress_is_printed_when_nothing_is_found(self, tmp_path, capsys,
+                                                       monkeypatch):
+        """Regression: progress and checkpointing used to sit after an early
+        `continue`, so a run with no findings printed nothing after the header.
+        On a 1,805-file corpus that is indistinguishable from a hang."""
+        corpus = self._corpus(tmp_path, 200)
+        monkeypatch.setattr(scanner, "scan_file", lambda *a, **k: None)
+
+        rc = scanner.main(["prog", str(corpus), str(tmp_path / "out.json")])
+
+        assert rc == 0
+        assert "[200/200]" in capsys.readouterr().out
+
+    def test_checkpoint_is_written_mid_run_when_nothing_is_found(self, tmp_path,
+                                                                 monkeypatch):
+        """The periodic write must also happen on a clean run, so a killed
+        run still leaves a readable artifact behind."""
+        corpus = self._corpus(tmp_path, 100)
+        out_path = tmp_path / "out.json"
+        seen: list[str] = []
+
+        real_write = Path.write_text
+
+        def spy(self, data, *args, **kwargs):
+            if self == out_path:
+                seen.append(data)
+            return real_write(self, data, *args, **kwargs)
+
+        monkeypatch.setattr(scanner, "scan_file", lambda *a, **k: None)
+        monkeypatch.setattr(Path, "write_text", spy)
+
+        assert scanner.main(["prog", str(corpus), str(out_path)]) == 0
+        # One at index 100, one final. Under the bug only the final write ran.
+        assert len(seen) == 2, f"expected a mid-run checkpoint, got {len(seen)} writes"
+        assert json.loads(out_path.read_text(encoding="utf-8")) == []
