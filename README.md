@@ -161,18 +161,29 @@ produce output that is not Python.
 
 ### 3. ruff, the CPython standard library — nothing
 
-| | |
-|---|---|
-| tool | ruff 0.15.20 |
-| corpus | CPython 3.12.10 `Lib/`, excluding `site-packages` |
-| size | 1,805 files |
-| flags | `--select ALL --fix --unsafe-fixes` |
-| result | **0 findings** |
+| | ruff 0.15.20 | ruff 0.16.7 |
+|---|---|---|
+| corpus | CPython 3.12.10 `Lib/`, excluding `site-packages` | same |
+| size | 1,805 files | 1,805 files |
+| flags | `--select ALL --fix --unsafe-fixes` | same |
+| date | 2026-09-10 | 2026-09-14 |
+| result | **0 findings** | **0 findings** |
+
+Raw output for the re-scan:
+[`results/ruff-0.16.7-cpython-3.12.10-lib.json`](results/ruff-0.16.7-cpython-3.12.10-lib.json)
+— which is `[]`, and on its own proves nothing. The provenance that makes it
+meaningful lives in the table above rather than in the file; that asymmetry is
+tracked in [#9](https://github.com/WAHIB-EL-KHADIRI/autofix-safety/issues/9).
 
 Curated fixtures are a weaker adversary than they look — each exercises one
 construct. CPython's `Lib/` includes the CPython test suite, which contains
 every syntactic edge the language has, plus deliberately invalid files (those
 are skipped by the before-state check).
+
+The re-scan exists because a clean result expires. 0.15.20 → 0.16.7 is a whole
+minor series of new and changed fixes, and "ruff was clean four days ago" is not
+a claim about the ruff anyone is running today. Re-running is cheap; leaving a
+stale negative result standing is not.
 
 **Two clean runs is a real result about ruff, and it is reported here for the
 same reason the failures are.** A method that publishes only its hits is a sales
