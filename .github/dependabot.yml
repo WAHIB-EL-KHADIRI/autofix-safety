@@ -1,0 +1,10 @@
+# Only GitHub Actions: the scanners have no pinned dependency manifest, they
+# import whichever ruff or sqlfluff the corpus under test is installed with.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"

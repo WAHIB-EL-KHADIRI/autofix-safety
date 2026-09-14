@@ -1,0 +1,80 @@
+name: A finding from a scan
+description: You ran a scanner, got a hit, and think it is a real defect in the tool under test.
+labels: ["finding"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **A scanner hit is not a finding.** This form exists because a report
+        from this project was closed upstream as not-planned — filed before the
+        cause was understood, then corrected twice in public. The maintainer was
+        right to close it.
+
+        Everything below is what should have been done before that issue was
+        opened. If you cannot fill a section in, the finding is not ready yet,
+        and that is a useful thing to learn now rather than in someone else's
+        issue tracker.
+
+  - type: input
+    id: tool
+    attributes:
+      label: Tool and exact version
+      placeholder: "sqlfluff 4.3.0"
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Corpus commit
+      description: The commit of the project whose corpus you scanned. "latest" is not a commit.
+      placeholder: "818243e2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Which class
+      options:
+        - CORRUPTION
+        - COMMENTED
+        - GUARDED
+        - FIX_CRASH
+        - UNSTABLE
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Manual reproduction
+      description: |
+        The commands you ran **by hand**, not through the scanner, and their
+        output. If the only evidence is the scanner's JSON, this is a hit, not
+        a finding.
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: triage
+    attributes:
+      label: Triage
+      options:
+        - label: The input parsed cleanly **before** the fix, so this is not a pre-existing parser gap
+          required: true
+        - label: I minimised from a real corpus file and re-verified against that file, not from a statement I typed out
+          required: true
+        - label: I understand the mechanism, not just the symptom — I can say which rule or code path causes it
+          required: true
+        - label: "If the class is UNSTABLE: I have ruled out ordinary multi-pass convergence"
+          required: false
+
+  - type: textarea
+    id: mechanism
+    attributes:
+      label: Mechanism
+      description: What is actually going wrong, in the tool's own terms. "The fix breaks it" is a symptom.
+    validations:
+      required: true
