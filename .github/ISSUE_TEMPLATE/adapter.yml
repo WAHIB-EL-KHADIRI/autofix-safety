@@ -1,0 +1,41 @@
+name: A new adapter
+description: You want to point the invariant at a tool that has no adapter yet.
+labels: ["adapter"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The useful contribution here is a new adapter, not more features in the
+        existing two. Three things have to be true for a tool to qualify.
+
+  - type: input
+    id: tool
+    attributes:
+      label: Which tool
+      placeholder: "prettier, rustfmt, black, gofmt ..."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: qualifies
+    attributes:
+      label: Does it qualify
+      options:
+        - label: It has an auto-fix or format mode that writes to the file
+          required: true
+        - label: There is a way to validate the output
+          required: true
+        - label: The project ships a corpus, or one exists that is not the tool's own
+          required: true
+
+  - type: input
+    id: oracle
+    attributes:
+      label: Which oracle
+      description: |
+        Prefer one that is not the tool under test. The ruff adapter uses
+        CPython's `ast.parse` for exactly this reason — a bug in ruff cannot
+        hide itself from the language's own parser.
+      placeholder: "the language's reference parser / the tool itself / something else"
+    validations:
+      required: true

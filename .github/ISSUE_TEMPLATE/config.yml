@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: A bug in sqlfluff or ruff themselves
+    url: https://github.com/sqlfluff/sqlfluff/issues
+    about: This project only finds them. Defects in the tools under test belong in their own trackers.
