@@ -53,29 +53,51 @@ The ruff scanner does not have that problem. Python's own `ast.parse` is the
 judge — the reference implementation of the language, with no stake in ruff
 being correct. **Where an independent oracle exists, use it.**
 
+## Install
+
+```bash
+pipx install "autofix-safety[ruff] @ git+https://github.com/WAHIB-EL-KHADIRI/autofix-safety"
+```
+
+or, inside an environment that already has the tool you want to scan:
+
+```bash
+pip install "git+https://github.com/WAHIB-EL-KHADIRI/autofix-safety"
+```
+
+Two commands land on your path: `autofix-safety-sqlfluff` and
+`autofix-safety-ruff`.
+
+**The package declares no hard dependencies, deliberately.** Each adapter drives
+whichever `ruff` or `sqlfluff` is already installed in the environment you point
+it at. Pinning a version here would mean scanning a different build of the tool
+than the project under test actually uses — which is the one thing that makes a
+finding worthless. The `[ruff]` and `[sqlfluff]` extras exist for when you have
+no preference.
+
 ## Usage
 
 ```bash
-# sqlfluff: run from a checkout with sqlfluff installed (pip install -e .)
-python scanners/sqlfluff_fix_safety.py test/fixtures/dialects out.json
-python scanners/sqlfluff_fix_safety.py test/fixtures/dialects out.json mysql   # one dialect
+# sqlfluff: run from a checkout that has sqlfluff installed
+autofix-safety-sqlfluff test/fixtures/dialects out.json
+autofix-safety-sqlfluff test/fixtures/dialects out.json mysql   # one dialect
 
 # ruff: any directory of Python files, not just ruff's own
-pip install ruff
-python scanners/ruff_fix_safety.py path/to/corpus out.json
-python scanners/ruff_fix_safety.py path/to/corpus out.json --safe-only
+autofix-safety-ruff path/to/corpus out.json
+autofix-safety-ruff path/to/corpus out.json --safe-only
 ```
 
 Output is a JSON array of findings with paths relative to the corpus root.
 Write to a file rather than piping — a long run buffers and you see nothing.
 
-### Check it works, without cloning anything
+### Check it works in ten seconds
 
-[`examples/minimal-corpus`](examples/) is three files that take seconds:
+You do not need sqlfluff's 2,262-fixture corpus to see the tool do something.
+[`examples/minimal-corpus`](examples/) in this repository is three files:
 
 ```bash
 pip install sqlfluff
-python scanners/sqlfluff_fix_safety.py examples/minimal-corpus out.json
+autofix-safety-sqlfluff examples/minimal-corpus out.json
 ```
 
 Two of the three should come back `CORRUPTION`; the third is ordinary SQL and
@@ -95,7 +117,7 @@ versions are given so they can be checked rather than believed.
 | tool | sqlfluff 4.3.0 |
 | corpus | `sqlfluff/test/fixtures/dialects` at commit `85dfbdff` |
 | size | 2,262 fixtures, 28 dialects |
-| command | `python scanners/sqlfluff_fix_safety.py test/fixtures/dialects out.json` |
+| command | `autofix-safety-sqlfluff test/fixtures/dialects out.json` |
 | result | **8 `CORRUPTION`, 29 `UNSTABLE`** |
 | runtime | ~40 min |
 

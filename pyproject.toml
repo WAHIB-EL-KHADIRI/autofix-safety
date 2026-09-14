@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "autofix-safety"
+version = "0.2.0"
+description = "Round-trip a linter's own test corpus through its --fix mode and check the output still parses."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [{ name = "Wahib El Khadiri", email = "wahibelkhadiri06@gmail.com" }]
+keywords = ["linter", "autofix", "static-analysis", "testing", "sqlfluff", "ruff", "correctness"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+]
+
+# No hard dependencies on purpose. Each adapter drives the tool the corpus
+# under test is already installed with -- pinning a version here would mean
+# scanning a different build of the tool than the project actually uses, which
+# is the one thing that would make a finding worthless.
+dependencies = []
+
+[project.optional-dependencies]
+sqlfluff = ["sqlfluff>=3.0"]
+ruff = ["ruff>=0.5"]
+dev = ["pytest>=8", "sqlfluff>=3.0", "ruff>=0.5", "pyyaml>=6"]
+
+[project.urls]
+Homepage = "https://github.com/WAHIB-EL-KHADIRI/autofix-safety"
+Issues = "https://github.com/WAHIB-EL-KHADIRI/autofix-safety/issues"
+Changelog = "https://github.com/WAHIB-EL-KHADIRI/autofix-safety/releases"
+
+[project.scripts]
+autofix-safety-sqlfluff = "autofix_safety.sqlfluff_adapter:cli"
+autofix-safety-ruff = "autofix_safety.ruff_adapter:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/autofix_safety"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
