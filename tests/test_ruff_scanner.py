@@ -7,6 +7,7 @@ down.
 """
 
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -148,3 +149,53 @@ class TestCleanRunReporting:
         # One at index 100, one final. Under the bug only the final write ran.
         assert len(seen) == 2, f"expected a mid-run checkpoint, got {len(seen)} writes"
         assert json.loads(out_path.read_text(encoding="utf-8")) == []
+
+
+class TestFailureKinds:
+    """A timeout and a crash need different triage, so they need different kinds.
+
+    A loaded machine produces timeouts on files that are provably fine. Filing
+    one upstream as "ruff crashed" is exactly the kind of wrong report that
+    costs a project its credibility.
+    """
+
+    @staticmethod
+    def _corpus(root: Path) -> Path:
+        corpus = root / "corpus"
+        corpus.mkdir()
+        (corpus / "sample.py").write_text("x = 1\n", encoding="utf-8")
+        return corpus
+
+    def test_timeout_is_reported_as_timeout_not_crash(self, tmp_path, monkeypatch):
+        corpus = self._corpus(tmp_path)
+
+        def always_times_out(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd="ruff", timeout=90)
+
+        monkeypatch.setattr(scanner.subprocess, "run", always_times_out)
+        finding = scanner.scan_file(
+            corpus / "sample.py", corpus, tmp_path, unsafe=True
+        )
+
+        assert finding is not None
+        assert finding["kind"] == "TIMEOUT", (
+            "a timeout must not be reported as FIX_CRASH -- FIX_CRASH means ruff "
+            "itself failed, and a busy machine is not that"
+        )
+
+    def test_nonzero_exit_is_reported_as_crash(self, tmp_path, monkeypatch):
+        corpus = self._corpus(tmp_path)
+
+        class Failed:
+            returncode = 101
+            stdout = b""
+            stderr = b"thread 'main' panicked\n"
+
+        monkeypatch.setattr(scanner.subprocess, "run", lambda *a, **k: Failed())
+        finding = scanner.scan_file(
+            corpus / "sample.py", corpus, tmp_path, unsafe=True
+        )
+
+        assert finding is not None
+        assert finding["kind"] == "FIX_CRASH"
+        assert "101" in finding["detail"]

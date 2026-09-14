@@ -22,11 +22,19 @@ Usage:
 Findings:
     CORRUPTION  parsed before the fix, does not parse after.
     UNSTABLE    fixing twice does not converge.
-    FIX_CRASH   ruff exited on a signal, or panicked.
+    FIX_CRASH   ruff exited non-zero, or produced output that is not UTF-8.
+    TIMEOUT     ruff produced no result within the limit. Says more about the
+                machine than about ruff; see the triage rules.
 
 Triage rules carried over -- they cost real time to learn:
   * UNSTABLE is a hypothesis, never a finding. Fixers legitimately need several
     passes to converge, which is why `--fix` is normally run in a loop.
+  * TIMEOUT is a hypothesis too, and a weaker one. A loaded machine produces
+    them on files that are provably fine -- one appeared on
+    `pycodestyle/E714.py` while a full test suite was saturating every core,
+    and did not reproduce three times in a row on an idle machine. Re-run an
+    isolated timeout before you even look at the file. It is kept separate
+    from FIX_CRASH precisely so it cannot be mistaken for ruff failing.
   * Measure the *before* state. A fixture using syntax newer than the running
     interpreter fails `ast.parse` before and after; that is a version gap, not
     corruption, and reporting it would poison an otherwise good issue.
@@ -74,8 +82,15 @@ def parses(source: str) -> bool:
         return False
 
 
-def run_fix(source: str, unsafe: bool, workdir: Path) -> tuple[str, str | None]:
-    """Fix `source` in a scratch file. Returns (output, crash_reason|None)."""
+def run_fix(source: str, unsafe: bool, workdir: Path
+            ) -> tuple[str, tuple[str, str] | None]:
+    """Fix `source` in a scratch file.
+
+    Returns (output, failure|None), where failure is a (kind, detail) pair.
+    The kind matters: a timeout says something about the machine, a non-zero
+    exit says something about ruff, and merging them into one bucket sends
+    load-induced noise upstream as if it were a crash.
+    """
     target = workdir / "subject.py"
     target.write_text(source, encoding="utf-8")
 
@@ -91,21 +106,22 @@ def run_fix(source: str, unsafe: bool, workdir: Path) -> tuple[str, str | None]:
         # no `except` in this file can see it, and the run dies silently.
         proc = subprocess.run(cmd, capture_output=True, timeout=90)
     except subprocess.TimeoutExpired:
-        return source, "timeout after 90s"
+        return source, ("TIMEOUT", "no result within 90s")
 
     # --exit-zero means lint findings do not set the code, so anything
     # non-zero here is ruff itself failing.
     if proc.returncode != 0:
         stderr = (proc.stderr or b"").decode("utf-8", errors="replace")
         detail = stderr.strip().splitlines()
-        return source, f"exit {proc.returncode}: {detail[-1] if detail else '?'}"
+        return source, ("FIX_CRASH",
+                        f"exit {proc.returncode}: {detail[-1] if detail else '?'}")
 
     try:
         return target.read_text(encoding="utf-8"), None
     except UnicodeDecodeError as exc:
         # Ruff turning valid UTF-8 into something that is not is itself a
         # finding, so surface it rather than swallowing it.
-        return source, f"output is not valid UTF-8: {exc}"
+        return source, ("FIX_CRASH", f"output is not valid UTF-8: {exc}")
 
 
 def scan_file(path: Path, root: Path, workdir: Path, unsafe: bool) -> dict | None:
@@ -125,18 +141,20 @@ def scan_file(path: Path, root: Path, workdir: Path, unsafe: bool) -> dict | Non
     rel = str(path.relative_to(root)).replace("\\", "/")
     level = "unsafe" if unsafe else "safe"
 
-    once, crash = run_fix(source, unsafe, workdir)
-    if crash:
-        return {"path": rel, "level": level, "kind": "FIX_CRASH", "detail": crash}
+    once, failure = run_fix(source, unsafe, workdir)
+    if failure:
+        kind, detail = failure
+        return {"path": rel, "level": level, "kind": kind, "detail": detail}
 
     if not parses(once):
         return {"path": rel, "level": level, "kind": "CORRUPTION",
                 "detail": first_syntax_error(once)}
 
-    twice, crash = run_fix(once, unsafe, workdir)
-    if crash:
-        return {"path": rel, "level": level, "kind": "FIX_CRASH",
-                "detail": f"second pass: {crash}"}
+    twice, failure = run_fix(once, unsafe, workdir)
+    if failure:
+        kind, detail = failure
+        return {"path": rel, "level": level, "kind": kind,
+                "detail": f"second pass: {detail}"}
 
     if twice != once:
         return {"path": rel, "level": level, "kind": "UNSTABLE",
@@ -212,10 +230,12 @@ def main(argv: list[str]) -> int:
         counts[finding["kind"]] = counts.get(finding["kind"], 0) + 1
 
     print(f"\nwrote {out_path}")
-    for kind in ("CORRUPTION", "FIX_CRASH", "UNSTABLE"):
+    for kind in ("CORRUPTION", "FIX_CRASH", "UNSTABLE", "TIMEOUT"):
         if kind in counts:
             print(f"  {kind:<11} {counts[kind]}")
-    print("\nCORRUPTION first. UNSTABLE is noise until proven otherwise.")
+    print("\nCORRUPTION first. UNSTABLE is noise until proven otherwise, and "
+          "TIMEOUT usually means the machine was busy -- re-run it before "
+          "reading the file.")
     return 0
 
 
