@@ -147,17 +147,30 @@ Raw output: [`results/sqlfluff-4.3.0-dialects-2026-09-09.json`](results/sqlfluff
 
 ### 2. ruff, its own fixtures — nothing
 
-| | |
-|---|---|
-| tool | ruff 0.15.20 |
-| corpus | `ruff/crates/ruff_linter/resources/test/fixtures` at commit `b5dba861c` |
-| size | 1,607 files |
-| flags | `--select ALL --fix --unsafe-fixes` |
-| result | **0 `CORRUPTION`, 0 `FIX_CRASH`, 0 `UNSTABLE`** |
+| | ruff 0.15.20 | ruff 0.16.7 |
+|---|---|---|
+| corpus | `ruff/crates/ruff_linter/resources/test/fixtures` at `b5dba861c` | same tree at `a65f3d6` |
+| size | 1,607 files | 1,607 files |
+| flags | `--select ALL --fix --unsafe-fixes` | same |
+| date | 2026-09-10 | 2026-09-14 |
+| result | **0 `CORRUPTION`, 0 `FIX_CRASH`, 0 `UNSTABLE`** | **same** |
+
+Raw output for the re-scan:
+[`results/ruff-0.16.7-fixtures-a65f3d6.json`](results/ruff-0.16.7-fixtures-a65f3d6.json)
+— also `[]`; see the note under run 3 and [#9](https://github.com/WAHIB-EL-KHADIRI/autofix-safety/issues/9).
 
 `--unsafe-fixes` is included deliberately. Ruff's contract for an unsafe fix is
 that it *may change the meaning* of the code; it is nowhere promised that it may
 produce output that is not Python.
+
+**One thing this run is worth remembering for.** A first attempt at this corpus,
+made while a full test suite was saturating every core, reported
+`FIX_CRASH pycodestyle/E714.py`. That fixture is fine: `scan_file` returns nothing
+on it three times in a row on an idle machine, and `ruff check --fix
+--unsafe-fixes` exits 0. It was a 90-second timeout wearing the label that means
+ruff crashed. The scanner now separates `TIMEOUT` from `FIX_CRASH` so that
+mistake cannot be made again, and the number published above is from the clean
+re-run, not from the contaminated one.
 
 ### 3. ruff, the CPython standard library — nothing
 
