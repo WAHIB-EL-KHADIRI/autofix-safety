@@ -189,11 +189,16 @@ def main(argv: list[str]) -> int:
                 print(f"  ERROR {path.name}: {exc}", flush=True)
                 continue
 
-            if finding is None:
-                continue
-            findings.append(finding)
-            print(f"  {finding['kind']:<11} {finding['path']}", flush=True)
+            if finding is not None:
+                findings.append(finding)
+                print(f"  {finding['kind']:<11} {finding['path']}", flush=True)
 
+            # Outside the `finding` branch on purpose. A clean corpus is the
+            # expected result, and when these lived under an early `continue`
+            # a run with no findings printed nothing after the header and
+            # checkpointed nothing -- 1,805 files of silence that is
+            # indistinguishable from a hang, and no partial output if the run
+            # is killed near the end.
             if index % 100 == 0:
                 out_path.write_text(json.dumps(findings, indent=2), encoding="utf-8")
 
