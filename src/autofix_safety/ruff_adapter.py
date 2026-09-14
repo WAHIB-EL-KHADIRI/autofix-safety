@@ -1,6 +1,6 @@
 """Round-trip ruff's own fixture corpus through `ruff check --fix`.
 
-Same invariant as `scan_fix_safety.py`, one adapter down:
+Same invariant as the sqlfluff adapter, one tool down:
 
     If a fixture parses cleanly, its `--fix` output must parse cleanly too.
 
@@ -17,7 +17,7 @@ either safety level; the report records which level produced it so severity can
 be argued honestly.
 
 Usage:
-    py scan_ruff_fix_safety.py <fixtures-dir> <out.json> [--safe-only]
+    autofix-safety-ruff <corpus-dir> <out.json> [--safe-only]
 
 Findings:
     CORRUPTION  parsed before the fix, does not parse after.
@@ -214,5 +214,10 @@ def main(argv: list[str]) -> int:
     return 0
 
 
-if __name__ == "__main__":
+def cli() -> None:
+    """Console entry point. `main` keeps taking argv so it stays testable."""
     raise SystemExit(main(sys.argv))
+
+
+if __name__ == "__main__":
+    cli()

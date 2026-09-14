@@ -6,16 +6,11 @@ it is therefore load-bearing: if it stops matching, a whole finding class
 silently disappears and the scan still looks healthy.
 """
 
-import sys
-from pathlib import Path
-
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scanners"))
 
 sqlfluff = pytest.importorskip("sqlfluff", reason="sqlfluff is not installed")
 
-import sqlfluff_fix_safety as scanner  # noqa: E402
+from autofix_safety import sqlfluff_adapter as scanner  # noqa: E402
 
 
 REAL_WARNING = (

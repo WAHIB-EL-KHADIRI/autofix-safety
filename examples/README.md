@@ -5,7 +5,7 @@ sqlfluff and waiting forty minutes.
 
 ```bash
 pip install sqlfluff
-python scanners/sqlfluff_fix_safety.py examples/minimal-corpus out.json
+autofix-safety-sqlfluff examples/minimal-corpus out.json
 ```
 
 Expected on sqlfluff 4.3.0:

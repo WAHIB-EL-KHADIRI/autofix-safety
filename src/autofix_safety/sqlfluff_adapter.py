@@ -10,7 +10,7 @@ used to test the *parser*; pointing them at the *fixer* asks a question nobody
 asked.
 
 Usage:
-    py scan_fix_safety.py <fixtures-dir> <out.json> [dialect]
+    autofix-safety-sqlfluff <fixtures-dir> <out.json> [dialect]
 
     <fixtures-dir>  e.g. test/fixtures/dialects  (dialect taken from the
                     subdirectory name) or a single dialect directory.
@@ -301,5 +301,10 @@ def main(argv: list[str]) -> int:
     return 0
 
 
-if __name__ == "__main__":
+def cli() -> None:
+    """Console entry point. `main` keeps taking argv so it stays testable."""
     raise SystemExit(main(sys.argv))
+
+
+if __name__ == "__main__":
+    cli()

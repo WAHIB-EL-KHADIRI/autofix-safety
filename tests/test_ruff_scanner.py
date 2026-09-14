@@ -6,15 +6,12 @@ found nothing, so the oracle and the corpus filter are the things worth pinning
 down.
 """
 
-import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scanners"))
-
-import ruff_fix_safety as scanner  # noqa: E402
+from autofix_safety import ruff_adapter as scanner
 
 
 class TestOracle:
