@@ -44,8 +44,6 @@ Triage rules carried over -- they cost real time to learn:
 from __future__ import annotations
 
 import ast
-import json
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -72,7 +70,9 @@ SKIP_DIRS = {"site-packages", "dist-packages", ".venv", "venv", "node_modules",
 def ruff_available() -> bool:
     """Whether the ruff module can actually be invoked, for test skipping."""
     try:
-        proc = subprocess.run(RUFF + ["--version"], capture_output=True, timeout=30)
+        proc = subprocess.run(
+            RUFF + ["--version"], capture_output=True, timeout=30, check=False
+        )
         return proc.returncode == 0
     except (OSError, subprocess.TimeoutExpired):
         return False
@@ -112,7 +112,7 @@ def run_fix(source: str, unsafe: bool, workdir: Path
         # output with the locale codec (cp1252) inside subprocess's own reader
         # *thread* -- so a non-cp1252 byte in ruff's output raises there, where
         # no `except` in this file can see it, and the run dies silently.
-        proc = subprocess.run(cmd, capture_output=True, timeout=90)
+        proc = subprocess.run(cmd, capture_output=True, timeout=90, check=False)
     except subprocess.TimeoutExpired:
         return source, ("TIMEOUT", "no result within 90s")
 

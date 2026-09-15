@@ -55,7 +55,6 @@ Single-process on purpose: ProcessPoolExecutor hangs on Windows here.
 
 from __future__ import annotations
 
-import json
 import logging
 import re
 import sys

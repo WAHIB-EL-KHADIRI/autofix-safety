@@ -18,10 +18,9 @@ from __future__ import annotations
 import json
 import platform
 import subprocess
-import sys
 import time
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from . import __version__
@@ -84,12 +83,10 @@ class RunManifest:
     complete: bool = False
     scanner_version: str = __version__
     schema: str = SCHEMA
-    python_version: str = field(
-        default_factory=lambda: platform.python_version()
-    )
+    python_version: str = field(default_factory=platform.python_version)
     platform: str = field(default_factory=platform.platform)
     started_at: str = field(
-        default_factory=lambda: datetime.now(timezone.utc)
+        default_factory=lambda: datetime.now(UTC)
         .replace(microsecond=0)
         .isoformat()
         .replace("+00:00", "Z")
