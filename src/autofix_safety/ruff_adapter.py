@@ -51,6 +51,14 @@ import sys
 import tempfile
 from pathlib import Path
 
+from .manifest import (
+    RunManifest,
+    corpus_revision,
+    summarise,
+    tool_version,
+    write_results,
+)
+
 RUFF = [sys.executable, "-m", "ruff"]
 
 # Directories that are never the corpus under test. Without this, pointing the
@@ -196,6 +204,19 @@ def main(argv: list[str]) -> int:
     print(f"{len(targets)} files | fixes: "
           f"{'safe + unsafe' if unsafe else 'safe only'}", flush=True)
 
+    flags = ["--select", "ALL", "--fix"]
+    if unsafe:
+        flags.append("--unsafe-fixes")
+
+    run = RunManifest(
+        tool="ruff",
+        tool_version=tool_version("ruff"),
+        corpus=str(root),
+        corpus_revision=corpus_revision(root),
+        files_total=len(targets),
+        flags=flags,
+    )
+
     findings: list[dict] = []
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -204,8 +225,11 @@ def main(argv: list[str]) -> int:
             try:
                 finding = scan_file(path, root, workdir, unsafe)
             except Exception as exc:                       # keep the run alive
+                run.errors += 1
                 print(f"  ERROR {path.name}: {exc}", flush=True)
                 continue
+
+            run.files_scanned += 1
 
             if finding is not None:
                 findings.append(finding)
@@ -218,18 +242,20 @@ def main(argv: list[str]) -> int:
             # indistinguishable from a hang, and no partial output if the run
             # is killed near the end.
             if index % 100 == 0:
-                out_path.write_text(json.dumps(findings, indent=2), encoding="utf-8")
+                write_results(out_path, run, findings)
 
             if index % 200 == 0:
                 print(f"[{index}/{len(targets)}] {len(findings)} so far", flush=True)
 
-    out_path.write_text(json.dumps(findings, indent=2), encoding="utf-8")
+    run.complete = True
+    write_results(out_path, run, findings)
 
     counts: dict[str, int] = {}
     for finding in findings:
         counts[finding["kind"]] = counts.get(finding["kind"], 0) + 1
 
     print(f"\nwrote {out_path}")
+    print(f"  {summarise(run, findings)}")
     for kind in ("CORRUPTION", "FIX_CRASH", "UNSTABLE", "TIMEOUT"):
         if kind in counts:
             print(f"  {kind:<11} {counts[kind]}")

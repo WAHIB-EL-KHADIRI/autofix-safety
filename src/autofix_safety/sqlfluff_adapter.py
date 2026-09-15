@@ -64,6 +64,14 @@ from pathlib import Path
 
 from sqlfluff.core import FluffConfig, Linter
 
+from .manifest import (
+    RunManifest,
+    corpus_revision,
+    summarise,
+    tool_version,
+    write_results,
+)
+
 # sqlfluff declines some fixes it can tell would corrupt, and says so on the
 # logger: "Fixes for RF06 not applied, as it would result in an unparsable
 # file. Please report this as a bug ...". The file still parses afterwards, so
@@ -269,13 +277,25 @@ def main(argv: list[str]) -> int:
     print(f"{len(targets)} fixtures, "
           f"{len({d for _, d in targets})} dialects", flush=True)
 
+    run = RunManifest(
+        tool="sqlfluff",
+        tool_version=tool_version("sqlfluff"),
+        corpus=str(root),
+        corpus_revision=corpus_revision(root),
+        files_total=len(targets),
+        flags=["fix", "--dialect", only] if only else ["fix"],
+    )
+
     findings: list[dict] = []
     for index, (path, dialect) in enumerate(targets, start=1):
         try:
             finding = scan_file(path, dialect, root)
         except Exception:
+            run.errors += 1
             traceback.print_exc()
             continue
+
+        run.files_scanned += 1
 
         if finding:
             findings.append(finding)
@@ -283,15 +303,17 @@ def main(argv: list[str]) -> int:
 
         if index % 100 == 0:
             print(f"[{index}/{len(targets)}] {len(findings)} so far", flush=True)
-            out_path.write_text(json.dumps(findings, indent=2), encoding="utf-8")
+            write_results(out_path, run, findings)
 
-    out_path.write_text(json.dumps(findings, indent=2), encoding="utf-8")
+    run.complete = True
+    write_results(out_path, run, findings)
 
     counts: dict[str, int] = {}
     for finding in findings:
         counts[finding["kind"]] = counts.get(finding["kind"], 0) + 1
 
     print(f"\nwrote {out_path}")
+    print(f"  {summarise(run, findings)}")
     for kind in ("CORRUPTION", "COMMENTED", "GUARDED", "FIX_CRASH", "UNSTABLE",
                  "READ_ERROR"):
         if kind in counts:

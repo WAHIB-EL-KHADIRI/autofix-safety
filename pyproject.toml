@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "autofix-safety"
-version = "0.2.0"
+version = "0.3.0"
 description = "Round-trip a linter's own test corpus through its --fix mode and check the output still parses."
 readme = "README.md"
 license = { file = "LICENSE" }
