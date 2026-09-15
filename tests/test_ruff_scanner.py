@@ -133,22 +133,28 @@ class TestCleanRunReporting:
         run still leaves a readable artifact behind."""
         corpus = self._corpus(tmp_path, 100)
         out_path = tmp_path / "out.json"
-        seen: list[str] = []
+        seen: list[Path] = []
 
-        real_write = Path.write_text
+        # Spying on the artifact writer rather than on Path.write_text: the
+        # write is atomic now, so it lands on a sibling .tmp and is renamed
+        # into place, and a spy watching out_path directly would see nothing.
+        real_write_results = scanner.write_results
 
-        def spy(self, data, *args, **kwargs):
-            if self == out_path:
-                seen.append(data)
-            return real_write(self, data, *args, **kwargs)
+        def spy(path, manifest, findings):
+            seen.append(path)
+            return real_write_results(path, manifest, findings)
 
         monkeypatch.setattr(scanner, "scan_file", lambda *a, **k: None)
-        monkeypatch.setattr(Path, "write_text", spy)
+        monkeypatch.setattr(scanner, "write_results", spy)
 
         assert scanner.main(["prog", str(corpus), str(out_path)]) == 0
         # One at index 100, one final. Under the bug only the final write ran.
         assert len(seen) == 2, f"expected a mid-run checkpoint, got {len(seen)} writes"
-        assert json.loads(out_path.read_text(encoding="utf-8")) == []
+        assert all(path == out_path for path in seen)
+
+        document = json.loads(out_path.read_text(encoding="utf-8"))
+        assert document["findings"] == []
+        assert document["run"]["files_scanned"] == 100
 
 
 class TestFailureKinds:

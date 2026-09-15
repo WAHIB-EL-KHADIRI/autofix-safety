@@ -7,4 +7,4 @@ purpose: each tool needs its own oracle, and the ruff adapter's oracle is
 CPython's `ast.parse` rather than ruff itself.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
