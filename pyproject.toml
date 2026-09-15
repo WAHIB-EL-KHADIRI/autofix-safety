@@ -47,3 +47,22 @@ packages = ["src/autofix_safety"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint]
+# Ruff's defaults, plus E402 so the one deliberate late import below stays
+# annotated rather than silently allowed.
+extend-select = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+# The adapters drive third-party fixers over a corpus that is, by design,
+# arbitrary: every file in someone else's test suite, in every dialect they
+# support. A scanner that dies on one unexpected input reports a clean run
+# over a corpus it never finished, which is worse than a crash -- so these
+# catch broadly on purpose, classify, and keep going. The blind handlers are
+# the feature, not an oversight.
+"src/autofix_safety/*_adapter.py" = ["BLE001", "S110"]
+
+# The import has to follow pytest.importorskip: the module under test imports
+# sqlfluff at module scope, so importing it first turns a skip into a
+# collection error on an environment without sqlfluff installed.
+"tests/test_sqlfluff_scanner.py" = ["I001"]
