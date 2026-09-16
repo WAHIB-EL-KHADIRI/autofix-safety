@@ -1,14 +1,43 @@
 # autofix-safety
 
-Round-trip a linter's own test corpus through its `--fix` mode and check that
-the output is still valid.
+**Does `ruff --fix` corrupt your code? Find out in under a minute, without
+installing anything:**
+
+```bash
+uvx --from "autofix-safety[ruff] @ git+https://github.com/WAHIB-EL-KHADIRI/autofix-safety" autofix-safety-ruff . findings.json
+```
+
+That runs against **your** repository -- no clone, no virtualenv, nothing left
+behind. On a 75-file project it takes 34 seconds end to end, including the
+download, and prints:
+
+```
+75 files | fixes: safe + unsafe
+
+wrote findings.json
+  clean: 75/75 files, 0 findings (ruff 0.16.7)
+```
+
+A clean result is the common one, and it is a real result -- `findings.json`
+records the tool version, the corpus, the flags and the file count, so "nothing
+found" can be checked rather than believed.
+
+When it is not clean, `CORRUPTION` is the line that matters: a file that parsed
+before the fix and does not parse after.
+
+---
+
+The rule being tested is one line:
 
 ```
 If an input parses cleanly, its fixed output must parse cleanly too.
 ```
 
-That single invariant found a data-loss bug in sqlfluff, a 9.8k-star SQL linter
-that many teams run with `--fix` in CI.
+Auto-fix is the only part of a linter that *writes* to your code, and it
+usually runs unattended with nobody reading the diff. That invariant found a
+data-loss bug in sqlfluff, a 9.8k-star SQL linter many teams run with `--fix`
+in CI -- and found nothing in ruff across 1,607 of its own fixtures and 1,805
+CPython stdlib files, which is reported here just as plainly.
 
 ## The problem
 
@@ -54,6 +83,17 @@ judge — the reference implementation of the language, with no stake in ruff
 being correct. **Where an independent oracle exists, use it.**
 
 ## Install
+
+You do not have to. `uvx` runs it from git without installing anything, which
+is the invocation at the top of this page and the one to reach for first:
+
+```bash
+uvx --from "autofix-safety[ruff] @ git+https://github.com/WAHIB-EL-KHADIRI/autofix-safety" autofix-safety-ruff . findings.json
+```
+
+Swap `[ruff]` for `[sqlfluff]` to scan a SQL corpus.
+
+To keep it on your path instead:
 
 ```bash
 pipx install "autofix-safety[ruff] @ git+https://github.com/WAHIB-EL-KHADIRI/autofix-safety"
